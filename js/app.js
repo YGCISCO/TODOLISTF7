@@ -1,100 +1,94 @@
-// 1. Initialisation de Framework7 et configuration des routes
+// ============================================================
+//  Ma ToDo — point de départ
+//  Écran unique, sans routage.
+// ============================================================
+
+var $$ = Dom7; // utilitaire DOM intégré à Framework7
+
 var app = new Framework7({
     el: '#app',
-    name: 'My ToDo App',
+    name: 'MaToDo',
     theme: 'auto',
-    // Définition des écrans (routes)
-    routes: [
-        {
-            path: '/',
-            url: './index.html',
-        },
-        {
-            path: '/taches/',
-            url: './pages/pages.html', // CORRIGÉ : correspond à ton fichier actuel
-        },
-    ],
 });
 
-// Initialisation de la vue principale
-var mainView = app.views.create('.view-main');
 
-// Raccourci Framework7 pour manipuler le DOM
-var $$ = Dom7;
+// ============================================================
+//   SÉANCE 2 — déclarer le tableau des tâches, puis :
+//   - une fonction afficher() qui construit la liste
+//   - une fonction ajouterTache(texte)
+//   - une fonction supprimerTache(id)
+// ============================================================
 
-// Tableau de données initial (Séance 2)
-let taches = [
-    "Module F7 - Introduction",
-    "Module F7 - Session 1",
-    "Module F7 - Session 2",
-    "Module F7 - Session 3"
+var taches = [
+    { id: 1, texte: "Réviser l'algorithmique", fait: true },
+    { id: 2, texte: "terminer le tp", fait: true },
+    { id: 3, texte: "Réviser pour l'examen", fait: false },
+    { id: 4, texte: "Faire la session 3", fait: false },
 ];
 
-/* ============================================================
-   Gestion événementielle de la page "taches"
-   Le code s'exécute uniquement quand l'écran des tâches est chargé.
-   ============================================================ */
-$$(document).on('page:init', '.page[data-name="taches"]', function (e) {
-    
-    const container = document.getElementById('todo-container');
-    const inputTache = document.getElementById('todo-input');
-    const btnAjouter = document.getElementById('add-btn');
-
-    // Fonction pour afficher graphiquement les tâches du tableau
-    function rendreListe() {
-        container.innerHTML = ''; // On vide l'interface avant de reconstruire
-        
-        taches.forEach((tache, index) => {
-            const li = document.createElement('li');
-            li.className = 'item-content';
-            li.innerHTML = `
-                <div class="item-media">
-                    <label class="checkbox">
-                        <input type="checkbox" class="todo-checkbox">
-                        <i class="icon-checkbox"></i>
-                    </label>
+function ligneTache(t) {
+    return `
+        <li class="item-content" data-id="${t.id}">
+            <div class="item-media">
+                <label class="checkbox">
+                    <input type="checkbox" ${t.fait ? 'checked' : ''} />
+                    <i class="icon-checkbox"></i>
+                </label>
+            </div>
+            <div class="item-inner">
+                <div class="item-title">
+                ${t.texte}
                 </div>
-                <div class="item-inner">
-                    <div class="item-title">${tache}</div>
+                <div class="item-after">
+                <a href="#" class="btn-suppr"><i class="icon f7-icons">trash</i></a>
                 </div>
-                <div class="right margin-right">
-                    <a href="#" class="link delete-btn" data-id="${index}">
-                        <i class="f7-icons text-color-red" style="font-size: 22px;">trash</i>
-                    </a>
-                </div>
-            `;
-            container.appendChild(li);
-        });
+            </div>
+        </li>
+    `
+}
 
-        // Réassigner les écouteurs de suppression sur les nouveaux boutons
-        creerEcouteursSuppression();
-    }
-
-    // Action : Ajouter une tâche
-    btnAjouter.addEventListener('click', function() {
-        const texte = inputTache.value.trim();
-        if (texte !== "") {
-            taches.push(texte); // Ajout dans le tableau
-            inputTache.value = ""; // Vider le champ
-            rendreListe(); // Actualiser l'écran
-        } else {
-            app.dialog.alert("Veuillez inscrire une tâche valide.");
-        }
+function afficherTaches() {
+    $$('.liste-taches').empty();
+    taches.map(tache => {
+        const li = ligneTache(tache);
+        $$('.liste-taches').append(li);
     });
+}
 
-    // Action : Supprimer une tâche
-    function creerEcouteursSuppression() {
-        const boutonsSuppr = document.querySelectorAll('.delete-btn');
-        boutonsSuppr.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const indexASupprimer = this.getAttribute('data-id');
-                taches.splice(indexASupprimer, 1); // Retire du tableau
-                rendreListe(); // Actualiser l'écran
-            });
-        });
-    }
+function ajouterTache(texte) {
+    if (texte.trim() === '') return;
+    var nouvelId = taches.reduce(function (m, t) { return Math.max(m, t.id); }, 0) + 1;
+    taches.push({ id: nouvelId, texte: texte.trim(), fait: false });
+    afficherTaches();
+}
 
-    // Premier affichage au chargement de la page
-    rendreListe();
+afficherTaches(); // premier appel de la fonction
+
+$$(document).on('click', '#btn-ajouter', function () {
+    var champ = $$('#saisie-tache');
+    ajouterTache(champ.val());
+    champ.val('');
 });
+
+function supprimerTache(id) {
+    taches = taches.filter(function (t) { return t.id !== parseInt(id, 10); });
+    afficherTaches();
+}
+$$(document).on('click', '.btn-suppr', function (e) {
+    e.preventDefault();
+    var id = $$(this).parents('.item-content').attr('data-id');
+    supprimerTache(id);
+});
+
+//
+//  SÉANCE 3 — ajouter :
+//    - basculerTache(id) pour cocher / décocher
+//    - le compteur de tâches restantes
+//    - les filtres (Toutes / À faire / Faites)
+//    - chargerTaches() et sauvegarder() avec localStorage
+// ------------------------------------------------------------
+
+// Exemple de structure de données (à activer en séance 2) :
+// var taches = [
+//   { id: 1, texte: "Réviser l'algorithmique", fait: false },
+// ];

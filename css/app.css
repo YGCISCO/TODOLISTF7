@@ -1,25 +1,17 @@
-/* Couleur principale calquée sur ta capture d'écran */
+/* ============================================================
+   Ma ToDo — styles de l'application
+   ============================================================ */
+
+/* Couleur principale du thème (orange) */
 :root {
-    --f7-theme-color: #2a9d8f;
-    --f7-theme-color-rgb: 42, 157, 143;
-    --f7-theme-color-shade: #20786e;
-    --f7-theme-color-tint: #39c4b3;
+    --f7-theme-color: #d24cdb;
+    --f7-theme-color-rgb: 232, 89, 12;
+    --f7-theme-color-shade: #d24cdb;
+    --f7-theme-color-tint: #d24cdb;
 }
 
-/* Boutons personnalisés */
-.custom-btn-color {
-    background-color: var(--f7-theme-color) !important;
-    color: white !important;
+.page-content {
+    padding-bottom: 16px;
 }
 
-/* Espacement de la liste */
-.todo-list {
-    margin-top: 20px !important;
-}
-
-/* SÉANCE 3 : Rendu d'une tâche cochée */
-.item-content:focus-within .todo-checkbox:checked ~ .item-inner .item-title {
-    text-decoration: line-through;
-    color: #8e8e93;
-    opacity: 0.6;
-}
+/* SÉANCE 3 : ajouter ici le style de la tâche cochée (texte barré) */
